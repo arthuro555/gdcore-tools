@@ -1,0 +1,31 @@
+{
+  "name": "gdcore-tools",
+  "version": "1.0.0",
+  "description": "A package that downloads and bootstraps any version of GDevelops Core library",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arthuro555/gdcore-tools.git"
+  },
+  "keywords": [
+    "gdevelop",
+    "core",
+    "boostrapper"
+  ],
+  "author": "arthuro555",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arthuro555/gdcore-tools/issues"
+  },
+  "homepage": "https://github.com/arthuro555/gdcore-tools#readme",
+  "dependencies": {
+    "@octokit/request": "^5.4.12",
+    "esbuild": "^0.8.43",
+    "follow-redirects": "^1.10.0",
+    "fs-extra-promise": "^1.0.1",
+    "lodash": "^4.17.15",
+    "node-stream-zip": "^1.12.0",
+    "recursive-readdir": "^2.2.2",
+    "slugs": "^0.1.3"
+  }
+}
