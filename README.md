@@ -21,7 +21,7 @@ loadGD().then((gdtools) => {
 
 ## Examples
 
-You can find examples [here](https://github.com/arthuro555/gdcore-tools/tree/examples).
+You can find examples [here](https://github.com/arthuro555/gdcore-tools/tree/master/examples).
 
 ## API
 
