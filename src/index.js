@@ -7,7 +7,12 @@ const eventFunctionsWriter = require("./EventsFunctionsExtensionsLoader/LocalEve
 const saveProject = require("./LocalProjectWriter");
 const localFileSystem = require("./LocalFileSystem").fs;
 const assignIn = require("lodash/assignIn");
-const { getGD, getRuntimePath, findLatestVersion } = require("./downloadGD");
+const {
+  getGD,
+  getRuntimePath,
+  findLatestVersion,
+  onGDCoreEvent,
+} = require("./downloadGD");
 const { join, resolve } = require("path");
 
 class WrappedGD {
@@ -85,6 +90,15 @@ class WrappedGD {
   getRuntimePath() {
     return join(this.path, "Runtime");
   }
+
+  /**
+   * Trigger a callback when a certain event happens inside GDCore.
+   * @param {"print" | "error"} type The event type.
+   * @param {(message: string) => void} handler The event handler.
+   */
+  on(event, handler) {
+    onGDCoreEvent(event, handler);
+  }
 }
 
 const loadGD = async (version) => {
@@ -101,12 +115,6 @@ const loadGD = async (version) => {
           join(getRuntimePath(version), "Runtime", "Extensions")
         );
       })
-      /*
-    .then(() => {
-      const exts = gd.JsPlatform.get().getAllPlatformExtensions();
-      for (let i = 0; i < exts.size(); i++) console.log(exts.at(i).getName());
-    })
-    */
       .then(() => {
         return new WrappedGD(gd, getRuntimePath(version));
       })

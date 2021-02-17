@@ -18,9 +18,6 @@ const checkIfPathHasJsExtensionModule = (extensionFolderPath) => {
 };
 
 const findJsExtensionModules = (extensionsRoot) => {
-  console.info(
-    `Searching for JS extensions (file called JsExtension.js) in ${extensionsRoot}...`
-  );
   return new Promise(async (resolve, reject) => {
     const extensionFolders = await fs.readdirAsync(extensionsRoot);
 

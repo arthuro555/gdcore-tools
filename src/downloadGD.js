@@ -155,6 +155,9 @@ const downloadVersion = async function (versionTag) {
   );
 };
 
+const onGDCorePrint = new Set();
+const onGDCoreError = new Set();
+
 /**
  * Initialize libGD.js.
  * If the version is not present, download it.
@@ -171,16 +174,24 @@ const getGD = async function (versionTag) {
     await downloadVersion(versionTag).catch(console.error);
   }
 
-  await new Promise((resolve) => {
-    require(path.join(runtimePath, "libGD.js"))().then((GD) => {
-      global._GD = GD;
-      resolve();
+  return await new Promise((resolve) => {
+    global._GD = require(path.join(runtimePath, "libGD.js"))({
+      print: (e) => onGDCorePrint.forEach((callback) => callback(e)),
+      printErr: (e) => onGDCoreError.forEach((callback) => callback(e)),
+      onAbort: (e) => onGDCoreError.forEach((callback) => callback(e)),
     });
+    _GD.then((gd) => resolve());
   });
+};
+
+const onGDCoreEvent = (event, handler) => {
+  if (event === "print") onGDCorePrint.add(handler);
+  if (event === "error") onGDCoreError.add(handler);
 };
 
 module.exports = {
   getRuntimePath,
   getGD,
   findLatestVersion,
+  onGDCoreEvent,
 };
