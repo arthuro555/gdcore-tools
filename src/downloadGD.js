@@ -1,18 +1,19 @@
-const https = require("follow-redirects").https;
 const fs = require("fs-extra-promise");
 const path = require("path");
 const { request } = require("@octokit/request");
-const StreamZip = require("node-stream-zip");
 
 const getRuntimePath = (version) => path.join(__dirname, "Versions", version);
 
-const downloadFile = (file, savePath) =>
+const downloadFile = (file, savePath, required = true) =>
   new Promise((resolve) => {
-    https.get(file, function (response) {
+    require("follow-redirects").https.get(file, function (response) {
       if (response.statusCode !== 200) {
-        throw new Error(
-          `❌ Cannot download ${file}! Error ${response.statusCode}: ${response.statusMessage}`
-        );
+        if (required)
+          throw new Error(
+            `❌ Cannot download ${file}! Error ${response.statusCode}: ${response.statusMessage}`
+          );
+        // Silently fail if the file is not required
+        else return resolve(true);
       }
       response.pipe(fs.createWriteStream(savePath)).addListener("close", () => {
         resolve();
@@ -49,6 +50,7 @@ const findLatestVersion = () => {
  * @param {string} versionTag The GDevelop version tag
  */
 const downloadVersion = async function (versionTag) {
+  const StreamZip = require("node-stream-zip");
   const tasks = [];
   const gdPath = getRuntimePath(versionTag);
 
@@ -70,7 +72,7 @@ const downloadVersion = async function (versionTag) {
   ).data.object.sha;
 
   // Fetch the file with the GDJS Runtime and extensions
-  console.info(`🕗 Starting download of GDevelop '${versionTag}'...`);
+  console.info(`🕗 Starting download of GDevelop Runtime '${versionTag}'...`);
   const zipPath = path.join(gdPath, "gd.zip");
   tasks.push(
     downloadFile(
@@ -78,8 +80,8 @@ const downloadVersion = async function (versionTag) {
       zipPath
     )
       .then(async () => {
-        console.info(`✅ Done downloading GDevelop '${versionTag}'`);
-        console.info(`🕗 Extracting GDevelop '${versionTag}'...`);
+        console.info(`✅ Done downloading GDevelop Runtime '${versionTag}'`);
+        console.info(`🕗 Extracting GDevelop Runtime '${versionTag}'...`);
         await fs.mkdirAsync(path.join(gdPath, "Runtime"));
         await fs.mkdirAsync(path.join(gdPath, "Runtime", "Extensions"));
         const zip = new StreamZip({
@@ -95,7 +97,7 @@ const downloadVersion = async function (versionTag) {
                 path.join(gdPath, "Runtime", "Extensions"),
                 (e) => {
                   if (e)
-                    console.error("❌ Error while extracting extensions! ", e);
+                    console.error("❌ Error while extracting the GDevelop Runtime extensions! ", e);
                   else resolve();
                 }
               );
@@ -108,7 +110,7 @@ const downloadVersion = async function (versionTag) {
                 path.join(gdPath, "Runtime"),
                 (e) => {
                   if (e)
-                    console.error("❌ Error while extracting the runtime! ", e);
+                    console.error("❌ Error while extracting the GDevelop Runtime! ", e);
                   else resolve();
                 }
               );
@@ -136,7 +138,7 @@ const downloadVersion = async function (versionTag) {
     "https://s3.amazonaws.com/gdevelop-gdevelop.js/master/commit/" +
     commitHash +
     "/";
-  console.info(`🕗 Starting download of libGD.js and libGD.js.mem...`);
+  console.info(`🕗 Starting download of GDevelop Core...`);
   tasks.push(
     downloadFile(
       libGDPath + "libGD.js",
@@ -146,8 +148,20 @@ const downloadVersion = async function (versionTag) {
   tasks.push(
     downloadFile(
       libGDPath + "libGD.js.mem",
-      path.join(gdPath, "libGD.js.mem")
-    ).then(() => console.info(`✅ Done downloading libGD.js.mem`))
+      path.join(gdPath, "libGD.js.mem"),
+      false
+    ).then(
+      (errored) => !errored && console.info(`✅ Done downloading libGD.js.mem`)
+    )
+  );
+  tasks.push(
+    downloadFile(
+      libGDPath + "libGD.wasm",
+      path.join(gdPath, "libGD.wasm"),
+      false
+    ).then(
+      (errored) => !errored && console.info(`✅ Done downloading libGD.wasm`)
+    )
   );
 
   return Promise.all(tasks).then(() =>
