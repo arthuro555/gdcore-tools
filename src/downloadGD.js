@@ -97,7 +97,10 @@ const downloadVersion = async function (versionTag) {
                 path.join(gdPath, "Runtime", "Extensions"),
                 (e) => {
                   if (e)
-                    console.error("❌ Error while extracting the GDevelop Runtime extensions! ", e);
+                    console.error(
+                      "❌ Error while extracting the GDevelop Runtime extensions! ",
+                      e
+                    );
                   else resolve();
                 }
               );
@@ -110,7 +113,10 @@ const downloadVersion = async function (versionTag) {
                 path.join(gdPath, "Runtime"),
                 (e) => {
                   if (e)
-                    console.error("❌ Error while extracting the GDevelop Runtime! ", e);
+                    console.error(
+                      "❌ Error while extracting the GDevelop Runtime! ",
+                      e
+                    );
                   else resolve();
                 }
               );
@@ -140,10 +146,9 @@ const downloadVersion = async function (versionTag) {
     "/";
   console.info(`🕗 Starting download of GDevelop Core...`);
   tasks.push(
-    downloadFile(
-      libGDPath + "libGD.js",
-      path.join(gdPath, "libGD.js")
-    ).then(() => console.info(`✅ Done downloading libGD.js`))
+    downloadFile(libGDPath + "libGD.js", path.join(gdPath, "libGD.js")).then(
+      () => console.info(`✅ Done downloading libGD.js`)
+    )
   );
   tasks.push(
     downloadFile(
@@ -169,16 +174,13 @@ const downloadVersion = async function (versionTag) {
   );
 };
 
-const onGDCorePrint = new Set();
-const onGDCoreError = new Set();
-
 /**
  * Initialize libGD.js.
  * If the version is not present, download it.
  * Returning `gd` doesn't work, so a hacky workaround with global is used.
  * @param {string} [versionTag] The GDevelop version to use. If not precised, the latest is used.
  */
-const getGD = async function (versionTag) {
+const getGD = async function (versionTag, gdOptions) {
   const runtimePath = getRuntimePath(versionTag);
   // Download the version if it isn't present
   try {
@@ -188,24 +190,18 @@ const getGD = async function (versionTag) {
     await downloadVersion(versionTag).catch(console.error);
   }
 
-  return await new Promise((resolve) => {
-    global._GD = require(path.join(runtimePath, "libGD.js"))({
-      print: (e) => onGDCorePrint.forEach((callback) => callback(e)),
-      printErr: (e) => onGDCoreError.forEach((callback) => callback(e)),
-      onAbort: (e) => onGDCoreError.forEach((callback) => callback(e)),
+  const gd = require(path.join(runtimePath, "libGD.js"))(gdOptions);
+  return new Promise((resolve) => {
+    gd.then(() => {
+      // Make sure gd is not thenable as the promise would think it is one as well.
+      delete gd.then;
+      resolve(gd);
     });
-    _GD.then((gd) => resolve());
   });
-};
-
-const onGDCoreEvent = (event, handler) => {
-  if (event === "print") onGDCorePrint.add(handler);
-  if (event === "error") onGDCoreError.add(handler);
 };
 
 module.exports = {
   getRuntimePath,
   getGD,
   findLatestVersion,
-  onGDCoreEvent,
 };

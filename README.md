@@ -27,6 +27,13 @@ You can find examples [here](https://github.com/arthuro555/gdcore-tools/tree/mas
 
 You can find the API for GDCore (`WrappedGD.gd`) at [the official GDevelop website](https://docs.gdevelop-app.com/GDCore%20Documentation/namespacegd.html). Note that every method in `PascalCase` on the docs have to be used in `camelCase` in JavaScript.
 
+#### Events:
+##### `print`:
+Triggered when GDCore wants to print a message.
+
+##### `error`:
+Triggered when GDCore errors.
+
 #### `loadGD(version?: string): Promise<WrappedGD>`
 
 The entrypoint of the module. Accept a github release tag to specify a specific version to download and use.
@@ -47,6 +54,10 @@ Returns a promise that resolves once the file is saved.
 #### `WrappedGD.exportProject(project: gd.Project, outputDir: string, options?: Object): void`
 
 Exports a project to a directory. Some options may be passed to the exporter, but they aren't officially documented. Returns a promise that resolves once the export is done.
+
+#### `WrappedGD.reloadEventsFunctions(project): void`
+
+Regenerates the code and reloads all events based extensions.
 
 #### `WrappedGD.getRuntimePath(): string`
 
