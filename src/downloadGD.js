@@ -1,12 +1,13 @@
 const fs = require("fs-extra-promise");
 const path = require("path");
 const { request } = require("@octokit/request");
+const { https } = require("follow-redirects");
 
 const getRuntimePath = (version) => path.join(__dirname, "Versions", version);
 
 const downloadFile = (file, savePath, required = true) =>
   new Promise((resolve) => {
-    require("follow-redirects").https.get(file, function (response) {
+    https.get(file, function (response) {
       if (response.statusCode !== 200) {
         if (required)
           throw new Error(
@@ -65,11 +66,25 @@ const downloadVersion = async function (versionTag) {
     .then(() => fs.removeAsync(gdPath))
     .finally(() => fs.mkdirAsync(gdPath));
 
-  const commitHash = (
-    await request("GET /repos/4ian/GDevelop/git/ref/tags/{tag}", {
-      tag: versionTag,
+  let commit = (
+    await request("GET /repos/4ian/GDevelop/commits/{ref}", {
+      ref: (
+        await request("GET /repos/4ian/GDevelop/git/ref/tags/{tag}", {
+          tag: versionTag,
+        })
+      ).data.object.sha,
     })
-  ).data.object.sha;
+  ).data;
+
+  // Go up to the latest commit for which libGD.js was built
+  while (commit.commit.message.indexOf("[skip ci]") !== -1) {
+    commit = (
+      await request("GET /repos/4ian/GDevelop/commits/{ref}", {
+        ref: commit.parents[0].sha,
+      })
+    ).data;
+    console.log(commit.commit.message, commit.parents);
+  }
 
   // Fetch the file with the GDJS Runtime and extensions
   console.info(`🕗 Starting download of GDevelop Runtime '${versionTag}'...`);
@@ -88,7 +103,7 @@ const downloadVersion = async function (versionTag) {
           file: zipPath,
           storeEntries: true,
         });
-        const prefix = `4ian-GDevelop-${commitHash.slice(0, 7)}/`;
+        const prefix = `4ian-GDevelop-${commit.sha.slice(0, 7)}/`;
         return Promise.all([
           new Promise((resolve) => {
             zip.on("ready", () => {
@@ -142,7 +157,7 @@ const downloadVersion = async function (versionTag) {
   // Download the fitting libGD version
   const libGDPath =
     "https://s3.amazonaws.com/gdevelop-gdevelop.js/master/commit/" +
-    commitHash +
+    commit.sha +
     "/";
   console.info(`🕗 Starting download of GDevelop Core...`);
   tasks.push(
