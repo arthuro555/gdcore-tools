@@ -104,17 +104,38 @@ class WrappedGD extends EventEmitter {
    * Exports a project.
    * @param {*} project The loaded project.
    * @param {string} outputDir The output directory.
-   * @param {Object<string>} options Options to pass to the exporter.
+   * @param {Object<string>} [options] Options to pass to the exporter.
    */
   exportProject(project, outputDir, options) {
     const gd = this.gd;
     const exporter = new gd.Exporter(this.fs, this.versionPath);
-    const exportOptions = new gd.MapStringBoolean();
-    for (let key in options) {
-      exportOptions.set(key, options[key]);
+
+    if (typeof gd.ExportOptions === "function") {
+      const exportOptions = new gd.ExportOptions(project, outputDir);
+      const exportTarget = !options
+        ? null
+        : options.exportForElectron
+        ? "electron"
+        : options.exportForCordova
+        ? "cordova"
+        : options.exportForFacebookInstantGames
+        ? "facebookInstantGames"
+        : null;
+      if (exportTarget) exportOptions.setTarget(exportTarget);
+      exporter.exportWholePixiProject(exportOptions);
+      exportOptions.delete();
+    } else {
+      // In older versions, exportOptions was another more generic class.
+      const exportOptions = new gd.MapStringBoolean();
+      if (options) {
+        for (let key in options) {
+          exportOptions.set(key, options[key]);
+        }
+      }
+      exporter.exportWholePixiProject(project, outputDir, exportOptions);
+      exportOptions.delete();
     }
-    exporter.exportWholePixiProject(project, outputDir, exportOptions);
-    exportOptions.delete();
+
     exporter.delete();
   }
 
