@@ -18,6 +18,14 @@ const getBehaviorFunctionCodeNamespace = (
   return codeNamespacePrefix + "__" + mangleName(eventsBasedBehavior.getName());
 };
 
+/** Generate the namespace for an object function. */
+const getObjectFunctionCodeNamespace = (
+  eventsBasedObject,
+  codeNamespacePrefix
+) => {
+  return codeNamespacePrefix + "__" + mangleName(eventsBasedObject.getName());
+};
+
 module.exports.makeLoader = (gd) => {
   const {
     declareInstructionOrExpressionMetadata,
@@ -159,6 +167,24 @@ module.exports.makeLoader = (gd) => {
         }
       )
     )
+      .then(() =>
+        // Generate all objects and their functions
+        Promise.all(
+          mapVector(
+            eventsFunctionsExtension.getEventsBasedObjects(),
+            (eventsBasedObject) => {
+              return generateObject(
+                project,
+                extension,
+                eventsFunctionsExtension,
+                eventsBasedObject,
+                options,
+                codeGenerationContext
+              );
+            }
+          )
+        )
+      )
       .then(() =>
         // Generate all free functions
         Promise.all(
@@ -373,6 +399,108 @@ module.exports.makeLoader = (gd) => {
         return Promise.resolve();
       }
     });
+  }
+
+  function generateObject(
+    project,
+    extension,
+    eventsFunctionsExtension,
+    eventsBasedObject,
+    options,
+    codeGenerationContext
+  ) {
+    return Promise.resolve().then(() => {
+      const objectMethodMangledNames = new gd.MapStringString();
+      const objectMetadata = generateObjectMetadata(
+        project,
+        extension,
+        eventsFunctionsExtension,
+        eventsBasedObject,
+        options,
+        codeGenerationContext,
+        objectMethodMangledNames
+      );
+
+      // Generate code for the object and its methods
+      if (!options.skipCodeGeneration) {
+        const codeNamespace = getObjectFunctionCodeNamespace(
+          eventsBasedObject,
+          codeGenerationContext.codeNamespacePrefix
+        );
+        const includeFiles = new gd.SetString();
+        const objectCodeGenerator = new gd.ObjectCodeGenerator(project);
+        const code = objectCodeGenerator.generateRuntimeObjectCompleteCode(
+          eventsFunctionsExtension.getName(),
+          eventsBasedObject,
+          codeNamespace,
+          objectMethodMangledNames,
+          includeFiles,
+
+          // For now, always generate functions for runtime (this disables
+          // generation of profiling for groups (see EventsCodeGenerator))
+          // as extensions generated can be used either for preview or export.
+          true
+        );
+        objectCodeGenerator.delete();
+        objectMethodMangledNames.delete();
+
+        // Add any include file required by the functions to the list
+        // of include files for this object (so that when used, the "dependencies"
+        // are transitively included).
+        includeFiles
+          .toNewVectorString()
+          .toJSArray()
+          .forEach((includeFile) => {
+            objectMetadata.addIncludeFile(includeFile);
+          });
+
+        includeFiles.delete();
+
+        return options.eventsFunctionCodeWriter.writeObjectCode(
+          codeNamespace,
+          code
+        );
+      } else {
+        // Skip code generation
+        objectMethodMangledNames.delete();
+        return Promise.resolve();
+      }
+    });
+  }
+
+  function generateObjectMetadata(
+    project,
+    extension,
+    eventsFunctionsExtension,
+    eventsBasedObject,
+    options,
+    codeGenerationContext,
+    objectMethodMangledNames
+  ) {
+    const objectMetadata = gd.MetadataDeclarationHelper.generateObjectMetadata(
+      project,
+      extension,
+      eventsFunctionsExtension,
+      eventsBasedObject,
+      objectMethodMangledNames
+    );
+
+    const codeNamespace = getObjectFunctionCodeNamespace(
+      eventsBasedObject,
+      codeGenerationContext.codeNamespacePrefix
+    );
+    // TODO EBO Handle name collision between objects and behaviors.
+    const includeFile =
+      options.eventsFunctionCodeWriter.getIncludeFileFor(codeNamespace);
+
+    objectMetadata.setIncludeFile(includeFile);
+
+    // Always include the extension include files when using an object.
+    codeGenerationContext.extensionIncludeFiles.forEach((includeFile) => {
+      objectMetadata.addIncludeFile(includeFile);
+    });
+
+    return objectMetadata;
   }
 
   /**
