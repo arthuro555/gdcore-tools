@@ -168,22 +168,24 @@ module.exports.makeLoader = (gd) => {
       )
     )
       .then(() =>
-        // Generate all objects and their functions
-        Promise.all(
-          mapVector(
-            eventsFunctionsExtension.getEventsBasedObjects(),
-            (eventsBasedObject) => {
-              return generateObject(
-                project,
-                extension,
-                eventsFunctionsExtension,
-                eventsBasedObject,
-                options,
-                codeGenerationContext
-              );
-            }
-          )
-        )
+        !gd.MetadataDeclarationHelper
+          ? Promise.resolve()
+          : // Generate all objects and their functions
+            Promise.all(
+              mapVector(
+                eventsFunctionsExtension.getEventsBasedObjects(),
+                (eventsBasedObject) => {
+                  return generateObject(
+                    project,
+                    extension,
+                    eventsFunctionsExtension,
+                    eventsBasedObject,
+                    options,
+                    codeGenerationContext
+                  );
+                }
+              )
+            )
       )
       .then(() =>
         // Generate all free functions
