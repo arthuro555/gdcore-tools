@@ -1,16 +1,23 @@
-const { findLatestVersion } = require("./downloadGD");
-const WrappedGD = require("./WrappedGD");
+import initializeGDevelopJs from "../dist/lib/libGD.cjs";
 
-const loadGD = async (version) => {
-  if (version === undefined) version = await findLatestVersion();
-  return new Promise((resolve, reject) => {
-    const wgd = new WrappedGD(version);
-    wgd.once("ready", () => {
-      wgd.removeAllListeners();
-      resolve(wgd);
-    });
-    wgd.once("initError", reject);
-  });
-};
+const fetch = globalThis.fetch;
+delete globalThis.fetch;
 
-module.exports = loadGD;
+export const gd = await new Promise((resolve) =>
+  initializeGDevelopJs().then(() => {
+    delete gd.then;
+    console.log("yes")
+    resolve(gd);
+  })
+);
+
+globalThis.fetch = fetch
+console.log("no")
+
+gd.ProjectHelper.initializePlatforms();
+
+global.gd = gd;
+const loaders = await import("../dist/loaders");
+delete global.gd;
+
+loaders.loadAllExtensions();

@@ -51,7 +51,6 @@ const findLatestVersion = () => {
  * @param {string} versionTag The GDevelop version tag
  */
 const downloadVersion = async function (versionTag) {
-  const StreamZip = require("node-stream-zip");
   const tasks = [];
   const gdPath = getRuntimePath(versionTag);
 
@@ -83,76 +82,7 @@ const downloadVersion = async function (versionTag) {
         ref: commit.parents[0].sha,
       })
     ).data;
-    console.log(commit.commit.message, commit.parents);
   }
-
-  // Fetch the file with the GDJS Runtime and extensions
-  console.info(`🕗 Starting download of GDevelop Runtime '${versionTag}'...`);
-  const zipPath = path.join(gdPath, "gd.zip");
-  tasks.push(
-    downloadFile(
-      "https://codeload.github.com/4ian/GDevelop/legacy.zip/" + versionTag,
-      zipPath
-    )
-      .then(async () => {
-        console.info(`✅ Done downloading GDevelop Runtime '${versionTag}'`);
-        console.info(`🕗 Extracting GDevelop Runtime '${versionTag}'...`);
-        await fs.mkdirAsync(path.join(gdPath, "Runtime"));
-        await fs.mkdirAsync(path.join(gdPath, "Runtime", "Extensions"));
-        const zip = new StreamZip({
-          file: zipPath,
-          storeEntries: true,
-        });
-        const prefix = `4ian-GDevelop-${commit.sha.slice(0, 7)}/`;
-        return Promise.all([
-          new Promise((resolve) => {
-            zip.on("ready", () => {
-              zip.extract(
-                prefix + "Extensions",
-                path.join(gdPath, "Runtime", "Extensions"),
-                (e) => {
-                  if (e)
-                    console.error(
-                      "❌ Error while extracting the GDevelop Runtime extensions! ",
-                      e
-                    );
-                  else resolve();
-                }
-              );
-            });
-          }),
-          new Promise((resolve) => {
-            zip.on("ready", () => {
-              zip.extract(
-                prefix + "GDJS/Runtime",
-                path.join(gdPath, "Runtime"),
-                (e) => {
-                  if (e)
-                    console.error(
-                      "❌ Error while extracting the GDevelop Runtime! ",
-                      e
-                    );
-                  else resolve();
-                }
-              );
-            });
-          }),
-        ]);
-      })
-      .finally(() => fs.removeAsync(zipPath))
-      .then(() => console.info(`✅ Done extracting the GDevelop Runtime`))
-      .then(() => {
-        try {
-          fs.statSync(path.join(gdPath, "Runtime", "gd.ts"));
-        } catch {
-          console.info("↪️ Skipping TypeScript compilation, already compiled.");
-          return;
-        }
-        console.info(`🕗 Compiling Runtime...`);
-        return require("./build")(gdPath);
-      })
-      .catch((e) => console.error("❌ Fatal error! ", e))
-  );
 
   // Download the fitting libGD version
   const libGDPath =
