@@ -27,6 +27,7 @@ async function downloadFile(commit_sha, file) {
   if (!body) throw new Error("No response body???");
 
   const writeStream = createWriteStream(destination);
+  //@ts-ignore Node types are a dummy
   await finished(Readable.fromWeb(body).pipe(writeStream));
 }
 

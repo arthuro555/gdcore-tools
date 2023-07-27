@@ -1,13 +1,8 @@
 // Note: for exporting games programatically, look into GDExporter.
 // https://github.com/arthuro555/gdexporter
 
-const loadGD = require("../..");
+import { loadProject,  } from "../../src/index.js";
 
-let gdTools;
-loadGD()
-  .then((_gdTools) => {
-    gdTools = _gdTools;
-    // Load the project file
-    return gdTools.loadProject("./game.json");
-  })
-  .then((project) => gdTools.exportProject(project, "GameExport"));
+const project = await loadProject("./game.json");
+console.log(project.getName());
+//await exportProject(project, "GameExport");

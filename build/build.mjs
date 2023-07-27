@@ -32,13 +32,15 @@ await downloadLibGD(versionTag);
 cmd("git submodule update --init --remote", { cwd: PATHS.ROOT });
 cmd(`git checkout ${versionTag}`, { cwd: PATHS.GDEVELOP });
 cmd(`npm run build -- --out ${PATHS.RUNTIME}`, { cwd: PATHS.GDJS });
+
 await build({
   entryPoints: [PATHS.LOADERS],
-  minify: true,
+  //minify: true,
   bundle: true,
-  outdir: PATHS.DIST,
-  format: "esm",
+  outfile: join(PATHS.DIST, "loaders.cjs"),
+  format: "cjs",
   plugins: [babelFlowPlugin()],
+  platform: "node",
 });
 
 console.log("✅ Done!");
