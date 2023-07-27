@@ -1,6 +1,7 @@
 const EventEmitter = require("events");
 const loadExtensions = require("./JsExtensionsLoader/LocalJsExtensionsLoader");
 const projectLoader = require("./LocalProjectOpener");
+const { makeLoader: makeLegacyLoader } = require("./EventsFunctionsExtensionsLoader/legacy");
 const { makeLoader } = require("./EventsFunctionsExtensionsLoader/index");
 const {
   makeLocalEventsFunctionCodeWriter,
@@ -59,7 +60,9 @@ class WrappedGD extends EventEmitter {
       })
       .then(() => {
         this.fs = assignIn(new this.gd.AbstractFileSystemJS(), makeFS(this.gd));
-        this.eventsFunctionsLoader = makeLoader(
+
+        const makeLoaderFunc = (!this.gd.MetadataDeclarationHelper) ? makeLegacyLoader : makeLoader;
+        this.eventsFunctionsLoader = makeLoaderFunc(
           this.gd
         ).loadProjectEventsFunctionsExtensions;
       })
