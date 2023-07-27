@@ -1,6 +1,6 @@
 {
   "name": "gdcore-tools",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A package that downloads and bootstraps any version of GDevelops Core library",
   "main": "src/index.js",
   "repository": {
