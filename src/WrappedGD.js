@@ -8,7 +8,8 @@ const {
 } = require("./EventsFunctionsExtensionsLoader/LocalEventsFunctionCodeWriter");
 const saveProject = require("./LocalProjectWriter");
 const assignIn = require("lodash/assignIn");
-const { getGD, getRuntimePath } = require("./downloadGD");
+const getGD = require("./getGD");
+const { getRuntimePath } = require("./fsUtils");
 const { join, resolve } = require("path");
 const { makeFS } = require("./LocalFileSystem");
 
