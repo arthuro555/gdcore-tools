@@ -2,7 +2,7 @@ const { getFetchConfiguration } = require("./downloadGD");
 const WrappedGD = require("./WrappedGD");
 
 /**
- * @param {{ version?: string, user?: string, fetchProvider?: GdFetchDataProvider, authToken?: string } | string} [options] Optional fetch configuration or github release tag.
+ * @param {{ versionTag?: string, user?: string, fetchProvider?: GdFetchDataProvider, authToken?: string } | string} [options] Optional fetch configuration or github release tag.
  */
 const loadGD = async (loadOptions) => {  
   fetchOptions = await getFetchConfiguration(loadOptions || {});

@@ -43,7 +43,7 @@ class WrappedGD extends EventEmitter {
      * The path to the current version.
      * @private
      */
-    this.versionPath = getRuntimePath(fetchOptions.version, fetchOptions.user);
+    this.versionPath = getRuntimePath(fetchOptions.versionTag, fetchOptions.user);
 
     // Begin async loading of GDCore and extensions
     getGD(fetchOptions, {
