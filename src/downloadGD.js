@@ -2,8 +2,20 @@ const fs = require("fs-extra-promise");
 const path = require("path");
 const { request } = require("@octokit/request");
 const { https } = require("follow-redirects");
+const assert = require("assert");
 
-const getRuntimePath = (version) => path.join(__dirname, "Versions", version);
+const gdAuthor = "4ian";
+const libGdAssets = [
+  "libGD.js",
+  "libGD.js.mem",
+  "libGD.wasm",
+];
+const isRequiredLibGdAssets = (libGdAssets) => libGdAssets === "libGD.js";
+
+const getVersionsPath = () => path.join(__dirname, "Versions");
+const getRuntimePath = (version, user) => path.join(getVersionsPath(), `${user}-${version}`);
+
+const getAuthHeader = (authToken) => authToken ? { authorization: authToken } : { };
 
 const downloadFile = (file, savePath, required = true) =>
   new Promise((resolve) => {
@@ -22,187 +34,208 @@ const downloadFile = (file, savePath, required = true) =>
     });
   });
 
-const findLatestVersion = () => {
-  return new Promise((resolve, reject) => {
+const findLatestVersion = (user, authToken) =>
+  new Promise((resolve, reject) => {
     // Fetch base release infos
     console.info(`🕗 Getting latest release tag...`);
-    return request("GET /repos/4ian/GDevelop/releases/latest")
+    return request(`GET /repos/${user}/GDevelop/releases/latest`, { headers: getAuthHeader(authToken) })
       .then(({ data }) => {
         resolve(data.tag_name);
       })
       .catch(() => {
-        console.error(
-          "❌ Couldn't fetch latest version, using latest local version."
-        );
-        fs.readdirAsync(path.join(__dirname, "Versions"))
-          .then((versions) => resolve(versions[0]))
-          .catch(() => {
-            console.error(
-              "💀 Fatal Error! Couldn't find or download the latest version."
-            );
-            reject();
-          });
+        const onError = () => {
+          console.error("💀 Fatal Error! Couldn't find or download the latest version.");
+          reject();
+        };
+        console.error("❌ Couldn't fetch latest version, using latest local version.");
+        fs.readdirAsync(getVersionsPath())
+          .then((versions) => {
+            const [version] = versions.filter((versionPath) => versionPath.startsWith(user));
+            
+            if (!version) return onError();
+            resolve(versions[0]);
+          })
+          .catch(onError);
       });
   });
-};
 
-/**
- * Downloads a GDevelop version (libGD.js, the runtime and the extensions).
- * @param {string} versionTag The GDevelop version tag
- */
-const downloadVersion = async function (versionTag) {
+const extractGdZip = async (
+  zipPath,
+  savePath,
+  prefixUser,
+  pathsToExtract,
+  pathMapper = (pathToMap) => pathToMap
+) => {
   const StreamZip = require("node-stream-zip");
-  const tasks = [];
-  const gdPath = getRuntimePath(versionTag);
+  const zip = new StreamZip.async({
+    file: zipPath,
+    storeEntries: true,
+  });
+  const getDir = (pathToFile) => path.extname(pathToFile) ? path.dirname(pathToFile) : pathToFile;
+  const prefix = `${prefixUser}-GDevelop-${(await zip.comment).slice(0, 7)}`;
 
-  // Make sure "Versions" directory exists
-  const versionsDir = path.join(__dirname, "Versions");
-  await fs.accessAsync(versionsDir).catch(() => fs.mkdirAsync(versionsDir));
+  try {
+    for (const relatedPathToExtract of pathsToExtract) {
+      const pathToExtract = savePath + "/" + getDir(pathMapper(relatedPathToExtract));
 
-  // Clear directory
-  await fs
-    .accessAsync(gdPath)
-    .catch(() => null) // Swallow the error as it is expected to error
-    .then(() => fs.removeAsync(gdPath))
-    .finally(() => fs.mkdirAsync(gdPath));
+      await fs.ensureDir(pathToExtract);
+      await zip.extract(prefix + "/" + relatedPathToExtract, pathToExtract);
+    }
+    await zip.close();
+  } catch (err) {
+    console.error("❌ Error while extracting the GDevelop archive! ", e);
+  }
+}
 
-  let commit = (
+const getLatestCiCommit = async (versionTag, authToken) => {
+  const headers = getAuthHeader(authToken);
+  let { data: commit } =
     await request("GET /repos/4ian/GDevelop/commits/{ref}", {
       ref: (
         await request("GET /repos/4ian/GDevelop/git/ref/tags/{tag}", {
           tag: versionTag,
         })
       ).data.object.sha,
-    })
-  ).data;
+      headers,
+    });
 
   // Go up to the latest commit for which libGD.js was built
   while (commit.commit.message.indexOf("[skip ci]") !== -1) {
     commit = (
       await request("GET /repos/4ian/GDevelop/commits/{ref}", {
         ref: commit.parents[0].sha,
+        headers,
       })
     ).data;
-    console.log(commit.commit.message, commit.parents);
   }
 
-  // Fetch the file with the GDJS Runtime and extensions
+  return commit;
+}
+
+/**
+ * @typedef {{
+ *    'libGD.js': (string) => Promise<void>,
+ *    'libGD.wasm'?: (string) => Promise<void>,
+ *    'libGD.js.mem'?: (string) => Promise<void>
+ *  } | { libGDPath: string }
+ * } GdFetchDataProvider
+ * Fetch configuration that provides methods or url to load libGD assets.
+ */
+
+/**
+ * Verifies and complements passed fetch configuration object.
+ * 
+ * @param {{ version?: string, user?: string, fetchProvider?: GdFetchDataProvider, authToken?: string } | string} options Fetch configuration to complete.
+ * @returns {{ version: string, user: string, fetchProvider: GdFetchDataProvider, authToken?: string }} Complete fetch configuration object.
+ */
+const getFetchConfiguration = async (options) => {
+  if (typeof options === "string") options = { version: options }
+
+  options.user ??= gdAuthor;
+  options.version ??= await findLatestVersion(options.user, options.authToken);
+
+  if (options.user === gdAuthor) {
+    const { sha } = await getLatestCiCommit(options.version, options.authToken);
+
+    options.fetchProvider = {
+      libGDPath: `https://s3.amazonaws.com/gdevelop-gdevelop.js/master/commit/${sha}/`,
+    };
+  } else {
+    assert(options.fetchProvider, "❌ You should pass fetchProvider instance if fork is used.");
+    assert(
+      libGdAssets.every((libGdAsset) =>
+        !isRequiredLibGdAssets(libGdAsset) ||
+        typeof options.fetchProvider[libGdAsset] === "function"
+      ) || options.fetchProvider.libGDPath, 
+      `❌ You should provide fetch methods or fetch url for necessary libGD assets: ${libGdAssets.map(isRequiredLibGdAssets)}.`
+    );
+  }
+
+  return options;
+};
+
+/**
+ * Downloads a GDevelop version (libGD.js, the runtime and the extensions).
+ * 
+ * @param {{ version: string, user: string, fetchProvider: GdFetchDataProvider, authToken?: string }} fetchConfiguration Fetch configuration.
+ */
+const downloadVersion = async function ({ version: versionTag, user, fetchProvider }) {
+  const tasks = [];
+  const gdPath = getRuntimePath(versionTag, user);
+
+  // Make sure "Versions" directory exists
+  fs.ensureDirSync(getVersionsPath());
+  // Clear directory
+  fs.emptyDirSync(gdPath);
+
+  // Fetch the file with GDJS Runtime and extensions
   console.info(`🕗 Starting download of GDevelop Runtime '${versionTag}'...`);
-  const zipPath = path.join(gdPath, "gd.zip");
   tasks.push(
-    downloadFile(
-      "https://codeload.github.com/4ian/GDevelop/legacy.zip/" + versionTag,
-      zipPath
-    )
-      .then(async () => {
-        console.info(`✅ Done downloading GDevelop Runtime '${versionTag}'`);
-        console.info(`🕗 Extracting GDevelop Runtime '${versionTag}'...`);
-        await fs.mkdirAsync(path.join(gdPath, "Runtime"));
-        await fs.mkdirAsync(path.join(gdPath, "Runtime", "Extensions"));
-        const zip = new StreamZip({
-          file: zipPath,
-          storeEntries: true,
-        });
-        const prefix = `4ian-GDevelop-${commit.sha.slice(0, 7)}/`;
-        return Promise.all([
-          new Promise((resolve) => {
-            zip.on("ready", () => {
-              zip.extract(
-                prefix + "Extensions",
-                path.join(gdPath, "Runtime", "Extensions"),
-                (e) => {
-                  if (e)
-                    console.error(
-                      "❌ Error while extracting the GDevelop Runtime extensions! ",
-                      e
-                    );
-                  else resolve();
-                }
-              );
-            });
-          }),
-          new Promise((resolve) => {
-            zip.on("ready", () => {
-              zip.extract(
-                prefix + "GDJS/Runtime",
-                path.join(gdPath, "Runtime"),
-                (e) => {
-                  if (e)
-                    console.error(
-                      "❌ Error while extracting the GDevelop Runtime! ",
-                      e
-                    );
-                  else resolve();
-                }
-              );
-            });
-          }),
-        ]);
-      })
-      .finally(() => fs.removeAsync(zipPath))
-      .then(() => console.info(`✅ Done extracting the GDevelop Runtime`))
-      .then(() => {
-        try {
-          fs.statSync(path.join(gdPath, "Runtime", "gd.ts"));
-        } catch {
-          console.info("↪️ Skipping TypeScript compilation, already compiled.");
-          return;
-        }
+    (async () => {
+      // return;
+      const zipPath = path.join(gdPath, "gd.zip");
+      const pathMapping = {
+        "GDJS/Runtime": "Runtime",
+        "Extensions": "Runtime/Extensions",
+      };
+      await downloadFile(`https://codeload.github.com/${user}/GDevelop/legacy.zip/${versionTag}`, zipPath);
+      console.info(`✅ Done downloading GDevelop Runtime '${versionTag}'`);
+      console.info(`🕗 Extracting GDevelop Runtime '${versionTag}'...`);
+      await extractGdZip(
+        zipPath,
+        gdPath,
+        user,
+        ['GDJS/Runtime', "Extensions"],
+        (pathToMap) => pathMapping[pathToMap] || pathToMap,
+      );
+      fs.rm(zipPath);
+      console.info(`✅ Done extracting the GDevelop Runtime`)
+    })()
+    .then(() => {
+      if (!fs.existsSync(path.join(gdPath, "Runtime/gd.js"))) {
         console.info(`🕗 Compiling Runtime...`);
         return require("./build")(gdPath);
-      })
-      .catch((e) => console.error("❌ Fatal error! ", e))
-  );
+      }
+    }
+  ));
 
-  // Download the fitting libGD version
-  const libGDPath =
-    "https://s3.amazonaws.com/gdevelop-gdevelop.js/master/commit/" +
-    commit.sha +
-    "/";
   console.info(`🕗 Starting download of GDevelop Core...`);
-  tasks.push(
-    downloadFile(libGDPath + "libGD.js", path.join(gdPath, "libGD.js")).then(
-      () => console.info(`✅ Done downloading libGD.js`)
-    )
-  );
-  tasks.push(
-    downloadFile(
-      libGDPath + "libGD.js.mem",
-      path.join(gdPath, "libGD.js.mem"),
-      false
-    ).then(
-      (errored) => !errored && console.info(`✅ Done downloading libGD.js.mem`)
-    )
-  );
-  tasks.push(
-    downloadFile(
-      libGDPath + "libGD.wasm",
-      path.join(gdPath, "libGD.wasm"),
-      false
-    ).then(
-      (errored) => !errored && console.info(`✅ Done downloading libGD.wasm`)
-    )
-  );
+  for (const libGdAsset of libGdAssets) {
+    // continue;
+    if (fetchProvider[libGdAsset]) tasks.push(fetchProvider[libGdAsset](gdPath));
+    else if (fetchProvider.libGDPath)
+      tasks.push(
+        downloadFile(
+          fetchProvider.libGDPath + libGdAsset,
+          path.join(gdPath, libGdAsset),
+          isRequiredLibGdAssets(libGdAsset),
+        ).then((errored) => !errored && console.info(`✅ Done downloading ${libGdAsset}`))
+      );
+  }
 
-  return Promise.all(tasks).then(() =>
-    console.info(`✅ Successfully downloaded GDevelop version '${versionTag}'`)
-  );
+  await Promise.all(tasks);
+  console.info(`✅ Successfully downloaded GDevelop version '${versionTag}'`);
 };
 
 /**
  * Initialize libGD.js.
  * If the version is not present, download it.
  * Returning `gd` doesn't work, so a hacky workaround with global is used.
- * @param {string} [versionTag] The GDevelop version to use. If not precised, the latest is used.
+ * @param {{ version: string, user: string, fetchProvider: GdFetchDataProvider, authToken?: string }} fetchOptions Fetch configuration.
  */
-const getGD = async function (versionTag, gdOptions) {
-  const runtimePath = getRuntimePath(versionTag);
+ const getGD = async function (fetchOptions, gdOptions) {
+  const runtimePath = getRuntimePath(fetchOptions.version, fetchOptions.user);
   // Download the version if it isn't present
-  try {
-    fs.accessSync(runtimePath);
-  } catch {
+  // await downloadVersion(fetchOptions);
+  if (!fs.existsSync(runtimePath)) {
     console.log("❌ The GDevelop version was not found, downloading it!");
-    await downloadVersion(versionTag).catch(console.error);
+    
+    try {
+      await downloadVersion(fetchOptions);
+    } catch (err) {
+      // fs.rm(runtimePath, { recursive: true });
+      throw err;
+    }
   }
 
   const gd = require(path.join(runtimePath, "libGD.js"))(gdOptions);
@@ -219,4 +252,5 @@ module.exports = {
   getRuntimePath,
   getGD,
   findLatestVersion,
+  getFetchConfiguration,
 };

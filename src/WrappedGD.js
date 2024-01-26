@@ -13,7 +13,7 @@ const { join, resolve } = require("path");
 const { makeFS } = require("./LocalFileSystem");
 
 class WrappedGD extends EventEmitter {
-  constructor(version) {
+  constructor(fetchOptions) {
     super();
 
     /**
@@ -43,10 +43,10 @@ class WrappedGD extends EventEmitter {
      * The path to the current version.
      * @private
      */
-    this.versionPath = getRuntimePath(version);
+    this.versionPath = getRuntimePath(fetchOptions.version, fetchOptions.user);
 
     // Begin async loading of GDCore and extensions
-    getGD(version, {
+    getGD(fetchOptions, {
       print: (message) => this.emit("print", message),
       printErr: (e) => this.emit("error", e),
       onAbort: (e) => this.emit("error", e),

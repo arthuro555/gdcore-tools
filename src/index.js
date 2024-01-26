@@ -1,10 +1,14 @@
-const { findLatestVersion } = require("./downloadGD");
+const { getFetchConfiguration } = require("./downloadGD");
 const WrappedGD = require("./WrappedGD");
 
-const loadGD = async (version) => {
-  if (version === undefined) version = await findLatestVersion();
+/**
+ * @param {{ version?: string, user?: string, fetchProvider?: GdFetchDataProvider, authToken?: string } | string} [options] Optional fetch configuration or github release tag.
+ */
+const loadGD = async (loadOptions) => {  
+  fetchOptions = await getFetchConfiguration(loadOptions || {});
+
   return new Promise((resolve, reject) => {
-    const wgd = new WrappedGD(version);
+    const wgd = new WrappedGD(fetchOptions);
     wgd.once("ready", () => {
       wgd.removeAllListeners();
       resolve(wgd);
