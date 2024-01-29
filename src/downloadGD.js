@@ -32,7 +32,7 @@ const libGdAssets = {
  *    useReleaseAssets: true
  *  }
  * } GdFetchDataProvider
- * Fetch configuration that provides methods or url to load libGD assets.
+ * Fetch configuration that provides methods or URL to load libGD assets.
  */
 
 /**
@@ -67,7 +67,7 @@ const getFetchConfiguration = async (options) => {
 };
 
 /**
- * Downloads a GDevelop Runtime sources and compile them.
+ * Downloads GDevelop Runtime sources and compiles them.
  * 
  * @param {{ versionTag: string, user: string, fetchProvider: GdFetchDataProvider, authToken?: string }} fetchConfiguration Fetch configuration.
  * @param {string} gdPath Path to save Runtime sources folder to.
@@ -103,7 +103,7 @@ const downloadLibGdAssets = async function ({ versionTag, user, fetchProvider, a
 
     assert(
       libGdAssets.required.every((libGdAsset) => assetsIdsMap[libGdAsset]),
-      `❌ Your release do not provide all required libGd assets: ${libGdAssets.required}. Provided: ${Object.values(assetsIdsMap)}.`
+      `❌ Your release does not provide all required libGd assets: ${libGdAssets.required}. Provided: ${Object.values(assetsIdsMap)}.`
     );
 
     return Promise.all(

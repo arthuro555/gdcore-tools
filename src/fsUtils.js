@@ -5,22 +5,22 @@ const StreamZip = require("node-stream-zip");
 const { findLatestRelease } = require("./gitUtils");
 
 /**
- * @param {string} user User to get path to versions of.
+ * @param {string} user User to get the path to versions of.
  * @returns {string} Path to specific user Gdevelop versions folder. 
  */
 const getUserPath = (user) => path.join(__dirname, "Versions", user);
 
 /**
  * @param {string} version Version to get path to.
- * @param {string} user User to get path to version of.
+ * @param {string} user User to get the path to the version of.
  * @returns {string} Path to specific Gdevelop version folder. 
  */
 const getRuntimePath = (version, user) => path.join(getUserPath(user), version);
 
 /**
- * @param {string} user User to get latest Gdevelop version of.
- * @param {string} [authToken] Github private token for autorization. 
- * @returns {Promise<string>} Promisified latest available version for specified user.
+ * @param {string} user User to get the latest Gdevelop version of.
+ * @param {string} [authToken] Github private token for authorization. 
+ * @returns {Promise<string>} Promisified latest available version for the specified user.
  */
 const findLatestVersion = async (user, authToken) => {
   console.info(`🕗 Getting latest release tag...`);
@@ -40,7 +40,7 @@ const findLatestVersion = async (user, authToken) => {
 
 /**
  * @param {string} file File url to download.
- * @param {string} savePath Path to save downloaded file.
+ * @param {string} savePath Path to save the downloaded file.
  * @param {boolean} required Defines if need to throw if loading error occurs. Throw if true is passed.
  */
 const downloadFile = (file, savePath, required = true) =>
@@ -60,10 +60,10 @@ const downloadFile = (file, savePath, required = true) =>
 const getDir = (pathToFile) => path.extname(pathToFile) ? path.dirname(pathToFile) : pathToFile;
 
 /**
- * Extracts Runtime sources from GDevelop github release archive.
+ * Extracts Runtime sources from GDevelop GitHub release archive.
  * @param {string} zipPath Path to Gdevelop zip archive.
  * @param {string} savePath Path to save extracted Runtime sources folder to.
- * @param {string} prefixUser Github user of GDevelop github release archive.
+ * @param {string} prefixUser Github user of GDevelop GitHub release archive.
  */
 const extractGdRuntimes = async (zipPath, savePath, prefixUser) => {
   const zip = new StreamZip.async({

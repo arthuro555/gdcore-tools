@@ -2,17 +2,17 @@ const { request } = require("@octokit/request");
 const fs = require("fs-extra-promise");
 
 /**
- * Returns octokit request authorization object if token is provided.
- * @param {string} [authToken] Github private token for autorization.
+ * Returns octokit request authorization object if the token is provided.
+ * @param {string} [authToken] Github private token for authorization.
  * @returns {{ authorization: string } | { }} Octokit request authorization object.
  */
 const getAuthHeader = (authToken) => authToken ? { authorization: authToken } : {};
 
 /**
- * Returns map object of release asset names as keys and assets ids as values.
+ * Returns map object of release asset names as keys and asset ids as values.
  * @param {string} user Github user of release.
  * @param {string} versionTag Release tag to get assets of.
- * @param {string} [authToken] Github private token for autorization. 
+ * @param {string} [authToken] Github private token for authorization. 
  * @returns {Promise<{ [assetName: string]: string }>} Map object of asset names to ids.
  */
 const getAssetsIdsMap = async (user, versionTag, authToken) => {
@@ -28,11 +28,11 @@ const getAssetsIdsMap = async (user, versionTag, authToken) => {
 };
 
 /**
- * Downloads github release asset.
+ * Downloads GitHub release asset.
  * @param {string} filePath Path to save asset by.
  * @param {string} user Github user of release asset.
  * @param {string} id Specific release asset id.
- * @param {string} [authToken] Github private token for autorization. 
+ * @param {string} [authToken] Github private token for authorization. 
  * @returns {Promise<void>}
  */
 const downloadGitBinaryAsset = (filePath, user, id, authToken) =>
@@ -47,9 +47,9 @@ const downloadGitBinaryAsset = (filePath, user, id, authToken) =>
     .then(({ data }) => fs.writeFile(filePath, Buffer.from(data)));
 
 /**
- * Returns latest commit for which libGD.js was built for official GDevelop repo.
+ * Returns the latest commit for which libGD.js was built for the official GDevelop repo.
  * @param {string} versionTag Release tag to get assets of.
- * @param {string} [authToken] Github private token for autorization. 
+ * @param {string} [authToken] Github private token for authorization. 
  * @returns {Object} Octokit commit object.
  */
 const getLatestCiCommit = async (versionTag, authToken) => {
@@ -78,9 +78,9 @@ const getLatestCiCommit = async (versionTag, authToken) => {
 }
 
 /**
- * Returns latest GDevelop repo release for specified user.
+ * Returns the latest GDevelop repo release for the specified user.
  * @param {string} user Github user of release.
- * @param {string} [authToken] Github private token for autorization. 
+ * @param {string} [authToken] Github private token for authorization. 
  * @returns {Promise<string>} Latest GDevelop repo release for specified user
  */
 const findLatestRelease = (user, authToken) =>
