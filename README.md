@@ -34,9 +34,30 @@ Triggered when GDCore wants to print a message.
 ##### `error`:
 Triggered when GDCore errors.
 
-#### `loadGD(version?: string): Promise<WrappedGD>`
+##### `loadGD(version?: string | {`
+##### &nbsp;&nbsp; `versionTag?: string,`
+##### &nbsp;&nbsp; `user?: string,`
+##### &nbsp;&nbsp; `authToken?: string,`
+##### &nbsp;&nbsp; `fetchProvider?: {`
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `libGDPath: string`
+##### &nbsp;&nbsp;&nbsp;&nbsp; `} | {`
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `useReleaseAssets: true } |`
+##### &nbsp;&nbsp;&nbsp;&nbsp; `} | {`
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `"libGD.js": (gdPath: string) => Promise<void>,`
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `"libGD.wasm"?: (gdPath: string) => Promise<void>,`
+##### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `"libGD.js.mem"?: (gdPath: string) => Promise<void>,`
+##### &nbsp;&nbsp;&nbsp;&nbsp; `}`
+##### &nbsp;&nbsp; `}`
+##### `}): Promise<WrappedGD>`
 
-The entrypoint of the module. Accept a github release tag to specify a specific version to download and use.
+The entrypoint of the module. Accept a github release tag to specify a specific version to download and use or configuration object where:
+- versionTag - optional github release tag
+- user - optional github GDevelop project or fork owner.
+- authToken - optional github private token for github API authorization 
+- fetchProvider - optional configuration for libGD assets loading. You can provide next settings:
+  - libGDPath - url to libGD assets
+  - useReleaseAssets - defines to load assets from release attachments
+  - libGD.js, libGD.wasm, libGD.js.mem - function providers to rely on for appropriate files loading
 
 #### `WrappedGD.gd: gd`
 

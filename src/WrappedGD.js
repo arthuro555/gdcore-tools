@@ -8,12 +8,13 @@ const {
 } = require("./EventsFunctionsExtensionsLoader/LocalEventsFunctionCodeWriter");
 const saveProject = require("./LocalProjectWriter");
 const assignIn = require("lodash/assignIn");
-const { getGD, getRuntimePath } = require("./downloadGD");
+const getGD = require("./getGD");
+const { getRuntimePath } = require("./fsUtils");
 const { join, resolve } = require("path");
 const { makeFS } = require("./LocalFileSystem");
 
 class WrappedGD extends EventEmitter {
-  constructor(version) {
+  constructor(fetchOptions) {
     super();
 
     /**
@@ -43,10 +44,10 @@ class WrappedGD extends EventEmitter {
      * The path to the current version.
      * @private
      */
-    this.versionPath = getRuntimePath(version);
+    this.versionPath = getRuntimePath(fetchOptions.versionTag, fetchOptions.user);
 
     // Begin async loading of GDCore and extensions
-    getGD(version, {
+    getGD(fetchOptions, {
       print: (message) => this.emit("print", message),
       printErr: (e) => this.emit("error", e),
       onAbort: (e) => this.emit("error", e),
