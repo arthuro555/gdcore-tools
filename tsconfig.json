@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "noEmit": true,
+    "checkJs": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "target": "ESNext",
+    "module": "Node16"
+  },
+  "include": ["./*.d.ts", "./build/**/*", "./src/**/*", "./examples/**/*.js"],
+  "exclude": ["./build/tmp/**/*", "./dist/**/*"]
+}
