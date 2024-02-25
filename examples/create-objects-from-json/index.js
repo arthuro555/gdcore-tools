@@ -16,14 +16,16 @@ let offset = 1;
 list.forEach((item) => {
   const textObjectName = "MyListItem_" + item;
   const object = gd.asTextObjectConfiguration(
-    scene.insertNewObject(
-      /* Project: */ project,
-      /* Object type: */ "TextObject::Text",
-      /* Object name: */ textObjectName,
-      /* Position where to insert: */ scene.getObjectsCount()
-    )
+    scene
+      .insertNewObject(
+        /* Project: */ project,
+        /* Object type: */ "TextObject::Text",
+        /* Object name: */ textObjectName,
+        /* Position where to insert: */ scene.getObjectsCount()
+      )
+      .getConfiguration()
   );
-  //object.setText("test");
+  object.setText("test");
   object.setColor(
     `${Math.random() * 255};${Math.random() * 255};${Math.random() * 255}`
   );

@@ -1,7 +1,5 @@
 //@ts-check
-import { request } from "@octokit/request";
 import { join } from "node:path";
-import { downloadLibGD } from "./download-libGD.mjs";
 import {
   cpSync,
   existsSync,
@@ -58,7 +56,6 @@ if (!ARGS["skip-build-gdcore"]) {
 }
 
 console.info(`Importing GDCore...`);
-cpSync(join(PATHS.GDCORE, "types.d.ts"), join(PATHS.ROOT, "gd.d.ts"));
 cpSync(
   join(PATHS.GDCORE_OUTPUT, "libGD.js"),
   join(PATHS.DIST, "lib", "libGD.cjs")
@@ -66,6 +63,15 @@ cpSync(
 cpSync(
   join(PATHS.GDCORE_OUTPUT, "libGD.wasm"),
   join(PATHS.DIST, "lib", "libGD.wasm")
+);
+
+console.info(`Patching & importing gd.d.ts...`);
+writeFileSync(
+  join(PATHS.GDCORE, "types.d.ts"),
+  readFileSync(join(PATHS.ROOT, "gd.d.ts"), { encoding: "utf-8" }).replace(
+    /declare global {[^}]*}/,
+    ""
+  )
 );
 
 console.info(`Patching & importing LocalFileSystem...`);

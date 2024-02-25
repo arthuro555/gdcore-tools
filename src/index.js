@@ -9,7 +9,7 @@ export let gd_internal_logs = "";
 const fetch = globalThis.fetch;
 //@ts-ignore We are doing a Hack™
 delete globalThis.fetch;
-/** @type {typeof GD} */
+/** @type {typeof import("../gd.js")} */
 export const gd = await new Promise((resolve) => {
   initializeGDevelopJs({
     print: (/** @type {string} */ message) => {
@@ -49,7 +49,7 @@ delete global.gd;
 const distPath = join(__dirname, "..", "dist");
 export const runtimePath = join(distPath, "Runtime");
 
-/** @type {GD.AbstractFileSystemJS} */
+/** @type {gd.AbstractFileSystemJS} */
 export const localFileSystem = loaders.assignIn(
   new gd.AbstractFileSystemJS(),
   new loaders.LocalFileSystem()
@@ -57,12 +57,12 @@ export const localFileSystem = loaders.assignIn(
 
 /**
  * @param {string} path
- * @returns {Promise<GD.Project>}
+ * @returns {Promise<gd.Project>}
  */
 export const loadProject = createProjectLoader({ gd, ...loaders });
 
 /**
- * @param {GD.Project} project
+ * @param {gd.Project} project
  * @param {string} outputDirectory
  * @param {"electron" | "cordova" | "facebookInstantGames"} [exportTarget]
  */
@@ -77,7 +77,7 @@ export function exportProject(project, outputDirectory, exportTarget) {
 }
 
 /**
- * @param {GD.Project} project
+ * @param {gd.Project} project
  * @param {string} [pathToProjectFile]
  * @returns {Promise<void>}
  */

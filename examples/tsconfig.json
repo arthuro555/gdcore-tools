@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "noEmit": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "target": "ESNext",
+    "module": "Node16",
+    "paths": {
+      "gdcore-tools": [".."]
+    }
+  },
+  "include": ["./**/*.js"],
+  "exclude": ["./build/tmp/**/*", "./dist/**/*"]
+}

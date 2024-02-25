@@ -13,9 +13,9 @@ const readJSONFile = async (filepath) => {
   }
 };
 
-/** @returns {(projectFilePath: string) => Promise<GD.Project>} */
+/** @returns {(projectFilePath: string) => Promise<gd.Project>} */
 export const createProjectLoader = (
-  /** @type {{gd: typeof GD, unsplit: (object: any, opts: {getReferencePartialObject: ((path: string) => Promise<string>), isReferenceMagicPropertyName: string, maxUnsplitDepth: number}) => any, loadProjectEventsFunctionsExtensions: ((project:GD.Project, writer:any, i18n:any) => Promise<void>), makeLocalEventsFunctionCodeWriter: ((opts:{onWriteFile:() => void}) => any)}} */ {
+  /** @type {{gd: typeof import("../gd.js"), unsplit: (object: any, opts: {getReferencePartialObject: ((path: string) => Promise<string>), isReferenceMagicPropertyName: string, maxUnsplitDepth: number}) => any, loadProjectEventsFunctionsExtensions: ((project:gd.Project, writer:any, i18n:any) => Promise<void>), makeLocalEventsFunctionCodeWriter: ((opts:{onWriteFile:() => void}) => any)}} */ {
     gd,
     unsplit,
     loadProjectEventsFunctionsExtensions,
@@ -101,16 +101,16 @@ const writeAndCheckFile = async (
   await rename(tmp, path);
 };
 
-/** @returns {(project: GD.Project) => Promise<void>} */
+/** @returns {(project: gd.Project, pathToProjectFile?: string) => Promise<void>} */
 export const createProjectSaver = (
-  /** @type {{gd: typeof GD, split: (object: any, opts: {pathSeparator: string, getArrayItemReferenceName: (object: Object, currentReference: string) => string, shouldSplit: (path: string) => boolean, isReferenceMagicPropertyName: string}) => {reference: string, object: {}}[], getSlugifiedUniqueNameFromProperty: (propertyName: string) => (object: Object, currentReference: string) => string}} */ {
+  /** @type {{gd: typeof import("../gd.js"), split: (object: any, opts: {pathSeparator: string, getArrayItemReferenceName: (object: Object, currentReference: string) => string, shouldSplit: (path: string) => boolean, isReferenceMagicPropertyName: string}) => {reference: string, object: {}}[], getSlugifiedUniqueNameFromProperty: (propertyName: string) => (object: Object, currentReference: string) => string}} */ {
     gd,
     split,
     getSlugifiedUniqueNameFromProperty,
   }
 ) =>
   async function saveProject(
-    /** @type {GD.Project} */ project,
+    /** @type {gd.Project} */ project,
     /** @type {string} */ pathToProjectFile = project.getProjectFile()
   ) {
     const projectDirectoryPath = dirname(pathToProjectFile);
