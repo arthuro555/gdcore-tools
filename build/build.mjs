@@ -57,18 +57,19 @@ if (!ARGS["skip-build-gdcore"]) {
 
 console.info(`Importing GDCore...`);
 cpSync(
-  join(PATHS.GDCORE_OUTPUT, "libGD.js"),
-  join(PATHS.DIST, "lib", "libGD.cjs")
-);
-cpSync(
   join(PATHS.GDCORE_OUTPUT, "libGD.wasm"),
   join(PATHS.DIST, "lib", "libGD.wasm")
+);
+writeFileSync(
+  join(PATHS.DIST, "lib", "libGD.cjs"),
+  `//@ts-nocheck
+` + readFileSync(join(PATHS.GDCORE_OUTPUT, "libGD.js"), { encoding: "utf-8" })
 );
 
 console.info(`Patching & importing gd.d.ts...`);
 writeFileSync(
-  join(PATHS.GDCORE, "types.d.ts"),
-  readFileSync(join(PATHS.ROOT, "gd.d.ts"), { encoding: "utf-8" }).replace(
+  join(PATHS.ROOT, "gd.d.ts"),
+  readFileSync(join(PATHS.GDCORE, "types.d.ts"), { encoding: "utf-8" }).replace(
     /declare global {[^}]*}/,
     ""
   )
@@ -110,6 +111,7 @@ await build({
   format: "cjs",
   plugins: [babelFlowPlugin()],
   platform: "node",
+  banner: { js: "//@ts-nocheck" },
   drop: ["console"],
 });
 

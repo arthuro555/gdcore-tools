@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "target": "ESNext",
+    "module": "Node16",
+    "lib": ["ESNext"],
+    "skipLibCheck": true
+  },
+  "include": ["./dev.d.ts", "./build/build.mjs", "./build/utils.mjs"],
+  "exclude": ["./build/tmp/**/*", "./build/loaders.mjs", "./dist/**/*"]
+}

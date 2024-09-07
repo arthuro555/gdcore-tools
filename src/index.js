@@ -1,4 +1,5 @@
 import { join } from "node:path";
+//@ts-ignore It's this file's job to apply the types, the imported file cannot yet be typed.
 import initializeGDevelopJs from "../dist/lib/libGD.cjs";
 import { __dirname } from "./utils.mjs";
 import { createProjectLoader, createProjectSaver } from "./open_project.js";
@@ -31,6 +32,7 @@ gd.ProjectHelper.initializePlatforms();
 // Temporarily make it global to allow these to grab the reference to gd they need.
 //@ts-ignore We are doing a Hack™
 global.gd = gd;
+//@ts-ignore Loaders are flow-typed, no ts type definitions available.
 const loaders = await import("../dist/loaders.cjs");
 //@ts-ignore We are doing a Hack™
 delete global.gd;

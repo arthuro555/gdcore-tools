@@ -1,16 +1,12 @@
 {
-  "compilerOptions": {
-    "rootDir": "src",
-    "emitDeclarationOnly": true,
-    "declaration": true,
-    "declarationDir": "types",
-    "allowJs": true,
-    "checkJs": true,
-    "strict": true,
-    "resolveJsonModule": true,
-    "target": "ESNext",
-    "module": "Node16"
-  },
-  "include": ["./*.d.ts", "./src/**/*"],
-  "exclude": ["./build/tmp/**/*", "./build/loaders.mjs", "./dist/**/*"]
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ]
 }
