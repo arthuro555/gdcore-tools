@@ -76,6 +76,32 @@ writeFileSync(
 );
 
 console.info(`Patching & importing LocalFileSystem...`);
+
+const fsModule = readFileSync(PATHS.FILESYSTEM_MODULE, { encoding: "utf-8" });
+
+if (
+  !fsModule.includes(
+    `import { isURL } from '../../ResourcesList/ResourceUtils';`
+  )
+) {
+  console.error("CHANGES NEEDED: isURL not found!");
+  process.exit(1);
+}
+
+if (!fsModule.includes(`import { getUID } from '../../Utils/LocalUserInfo';`)) {
+  console.error("CHANGES NEEDED: getUID not found!");
+  process.exit(1);
+}
+
+if (
+  !fsModule.includes(
+    `import optionalRequire from '../../Utils/OptionalRequire';`
+  )
+) {
+  console.error("CHANGES NEEDED: optionalRequire not found!");
+  process.exit(1);
+}
+
 writeFileSync(
   PATHS.FILESYSTEM_MODULE_PATCHED,
   readFileSync(PATHS.FILESYSTEM_MODULE, { encoding: "utf-8" })
@@ -95,10 +121,8 @@ writeFileSync(
       `import { getUID } from '../../Utils/LocalUserInfo';`,
       `const getUID = () => "gdcore-tools";`
     )
-    .replace(
-      `import optionalRequire from '../../Utils/OptionalRequire';`,
-      `const optionalRequire = require;`
-    )
+    .replace(`import optionalRequire from '../../Utils/OptionalRequire';`, ``)
+    .replaceAll("optionalRequire", `require`)
 );
 
 console.info("Building & minifying all imported code...");
@@ -113,6 +137,7 @@ await build({
   platform: "node",
   banner: { js: "//@ts-nocheck" },
   drop: ["console"],
+  packages: "bundle",
 });
 
 console.log("✅ Done!");
