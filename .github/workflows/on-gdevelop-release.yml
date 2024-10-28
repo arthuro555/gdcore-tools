@@ -38,8 +38,9 @@ jobs:
 
       - run: |
           npm ci
-          new_version="$(node -e "console.log($(jq '.version' package.json).split('-')[0])")-commit_${{ github.event.client_payload.release.target_commitish }}"
-          jq ".version = $new_version" package.json
+          new_version="$(node -e "console.log($(jq '.version' package.json).split('-')[0])")-gd_${{ github.event.client_payload.release.tag_name }}"
+          if ${{ github.event.client_payload.release.prerelease }};then new_version="$new_version_prerelease"; fi
+          jq ".version = \"$new_version\"" package.json
         working-directory: gdcore-tools
 
       - run: npm publish --provenance --access public
