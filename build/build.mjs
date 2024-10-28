@@ -3,6 +3,7 @@ import { join } from "node:path";
 import {
   cpSync,
   existsSync,
+  mkdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -32,6 +33,7 @@ const PATHS = {
     _GDEVELOP,
     "newIDE/app/src/ExportAndShare/LocalExporters/LocalFileSystem.js"
   ),
+  TMP: join(__dirname, "tmp"),
   FILESYSTEM_MODULE_PATCHED: join(__dirname, "tmp", "LocalFileSystem.js"),
 };
 
@@ -102,6 +104,7 @@ if (
   process.exit(1);
 }
 
+mkdirSync(PATHS.TMP, { recursive: true });
 writeFileSync(
   PATHS.FILESYSTEM_MODULE_PATCHED,
   readFileSync(PATHS.FILESYSTEM_MODULE, { encoding: "utf-8" })
