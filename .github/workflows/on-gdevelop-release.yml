@@ -53,7 +53,13 @@ jobs:
       - name: Build & publish
         run: |
           source ../emsdk/emsdk_env.sh
-          npm publish --provenance --access public
+          npm publish --provenance --access public --tag prerelease
+          PACKAGE="gdcore-tools@$(jq -r '.version' package.json)"
+          if ! ${{ github.event.client_payload.release.prerelease }}; then
+            echo "Marking as latest"
+            npm dist-tag add $PACKAGE latest
+          fi
+          npm dist-tag add $PACKAGE '${{ github.event.client_payload.release.tag_name }}'
         working-directory: gdcore-tools
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
