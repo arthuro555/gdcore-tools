@@ -4,6 +4,10 @@ on:
   repository_dispatch:
     types: [gdevelop-release]
 
+concurrency:
+  cancel-in-progress: true
+  group: release
+
 jobs:
   generate-release:
     runs-on: ubuntu-latest
@@ -20,6 +24,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: gdcore-tools
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -29,11 +35,20 @@ jobs:
           sudo apt-get install -y jq
           ./emsdk/emsdk install 3.1.21
           ./emsdk/emsdk activate 3.1.21
-          cd gdcore-tools
+
+      - run: |
+          npm ci
           new_version="$(node -e "console.log($(jq '.version' package.json).split('-')[0])")-commit_${{ github.event.client_payload.release.target_commitish }}"
           jq ".version = $new_version" package.json
+        working-directory: gdcore-tools
 
-      - run: npm ci
       - run: npm publish --provenance --access public
+        working-directory: gdcore-tools
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: gdcore-tools
