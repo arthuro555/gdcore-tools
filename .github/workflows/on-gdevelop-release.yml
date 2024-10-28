@@ -12,38 +12,46 @@ jobs:
   generate-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Download Emscripten
+        uses: actions/checkout@v4
         with:
           repository: emscripten-core/emsdk
           path: emsdk
-      - uses: actions/checkout@v4
+      - name: Download GDevelop
+        uses: actions/checkout@v4
         with:
           repository: 4ian/GDevelop
           path: GDevelop
           ref: refs/tags/${{ github.event.client_payload.release.tag_name }}
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           path: gdcore-tools
-          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          persist-credentials: false
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
-      - run: |
+
+      - name: Install other dependencies
+        run: |
           sudo apt-get install -y jq
           ./emsdk/emsdk install 3.1.21
-          ./emsdk/emsdk activate 3.1.21
 
-      - run: |
+      - name: Bump package version
+        run: |
           npm ci
           new_version="$(node -e "console.log($(jq '.version' package.json).split('-')[0])")-gd_${{ github.event.client_payload.release.tag_name }}"
           if ${{ github.event.client_payload.release.prerelease }};then new_version="$new_version_prerelease"; fi
           jq ".version = \"$new_version\"" package.json
         working-directory: gdcore-tools
 
-      - run: npm publish --provenance --access public
+      - run: |
+          ../emsdk/emsdk activate 3.1.21
+          npm publish --provenance --access public
         working-directory: gdcore-tools
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
