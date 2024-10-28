@@ -1,14 +1,13 @@
 {
   "name": "gdcore-tools",
-  "version": "2.0.0-beta8",
+  "version": "2.0.0-beta9",
   "description": "A package of GDevelop's Core library with additional helper tools.",
-  "type": "module",
   "types": "./types/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./types/index.d.ts",
-        "default": "./src/index.js"
+        "default": "./src/index.mjs"
       }
     }
   },
@@ -17,7 +16,7 @@
     "url": "git+https://github.com/arthuro555/gdcore-tools.git"
   },
   "engines": {
-    "node": "^18"
+    "node": ">=18"
   },
   "files": [
     "src",

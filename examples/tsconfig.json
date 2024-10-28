@@ -12,6 +12,6 @@
       "gdcore-tools": [".."]
     }
   },
-  "include": ["./**/*.js"],
+  "include": ["./**/*.(?m)js", "create-objects-from-json/index.mjs", "export-game/index.mjs"],
   "exclude": ["./build/tmp/**/*", "./dist/**/*"]
 }

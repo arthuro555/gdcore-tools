@@ -2,7 +2,7 @@ import { join } from "node:path";
 //@ts-ignore It's this file's job to apply the types, the imported file cannot yet be typed.
 import initializeGDevelopJs from "../dist/lib/libGD.cjs";
 import { __dirname } from "./utils.mjs";
-import { createProjectLoader, createProjectSaver } from "./open_project.js";
+import { createProjectLoader, createProjectSaver } from "./open_project.mjs";
 
 export let gd_internal_logs = "";
 
