@@ -47,7 +47,6 @@ jobs:
         run: |
           npm ci
           new_version="$(node -e "console.log($(yq '.version' package.json).split('-')[0])")-gd-${{ github.event.client_payload.release.tag_name }}-autobuild"
-          if ${{ github.event.client_payload.release.prerelease }};then new_version="$new_version-prerelease"; fi
           yq ".version = \"$new_version\"" -iP package.json
         working-directory: gdcore-tools
 
