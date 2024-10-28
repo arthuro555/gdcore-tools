@@ -1,6 +1,6 @@
 {
   "name": "gdcore-tools",
-  "version": "2.0.0-beta9",
+  "version": "2.0.0",
   "description": "A package of GDevelop's Core library with additional helper tools.",
   "types": "./types/index.d.ts",
   "exports": {
