@@ -40,6 +40,7 @@ jobs:
         run: |
           sudo apt-get install -y jq
           ./emsdk/emsdk install 3.1.21
+          ./emsdk/emsdk activate 3.1.21
 
       - name: Bump package version
         run: |
@@ -49,8 +50,9 @@ jobs:
           jq ".version = \"$new_version\"" package.json
         working-directory: gdcore-tools
 
-      - run: |
-          ../emsdk/emsdk activate 3.1.21
+      - name: Build & publish
+        run: |
+          source ../emsdk/emsdk_env.sh
           npm publish --provenance --access public
         working-directory: gdcore-tools
         env:
