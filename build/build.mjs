@@ -8,7 +8,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { __dirname, cmd } from "./utils.mjs";
+import { __dirname, cmd, npm_i } from "./utils.mjs";
 import { build } from "esbuild";
 import { babelFlowPlugin } from "esbuild-plugin-babel-flow";
 import minimist from "minimist";
@@ -29,6 +29,7 @@ const PATHS = {
   GDCORE: join(_GDEVELOP, "GDevelop.js"),
   GDCORE_OUTPUT: join(_GDEVELOP, "Binaries/embuild/GDevelop.js"),
   LOADERS: join(__dirname, "loaders.mjs"),
+  NEWIDE: join(_GDEVELOP, "newIDE/app"),
   FILESYSTEM_MODULE: join(
     _GDEVELOP,
     "newIDE/app/src/ExportAndShare/LocalExporters/LocalFileSystem.js"
@@ -47,13 +48,18 @@ if (!existsSync(PATHS.GDEVELOP)) {
   );
 }
 
+if (!ARGS["skip-installs"]) {
+  console.info(`Installting dependencies...`);
+  npm_i(PATHS.NEWIDE);
+  npm_i(PATHS.GDJS);
+}
+
 console.info(`Building & importing GDJS...`);
-if (!ARGS["skip-installs"]) cmd(`npm install`, { cwd: PATHS.GDJS });
 cmd(`npm run build -- --out ${PATHS.RUNTIME}`, { cwd: PATHS.GDJS });
 
 if (!ARGS["skip-build-gdcore"]) {
   console.info(`Building GDCore...`);
-  if (!ARGS["skip-installs"]) cmd(`npm install`, { cwd: PATHS.GDCORE });
+  if (!ARGS["skip-installs"]) npm_i(PATHS.GDCORE);
   cmd(`npm run build`, { cwd: PATHS.GDCORE });
 }
 
