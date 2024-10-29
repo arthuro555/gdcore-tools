@@ -1,12 +1,29 @@
 {
   "name": "gdcore-tools",
-  "version": "1.0.9",
-  "description": "A package that downloads and bootstraps any version of GDevelops Core library",
-  "main": "src/index.js",
+  "version": "2.0.0",
+  "description": "A package of GDevelop's Core library with additional helper tools.",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./types/index.d.ts",
+        "default": "./src/index.mjs"
+      }
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arthuro555/gdcore-tools.git"
   },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "src",
+    "dist",
+    "types",
+    "gd.d.ts"
+  ],
   "keywords": [
     "gdevelop",
     "core",
@@ -18,15 +35,24 @@
     "url": "https://github.com/arthuro555/gdcore-tools/issues"
   },
   "homepage": "https://github.com/arthuro555/gdcore-tools#readme",
-  "dependencies": {
-    "@octokit/request": "^5.4.12",
-    "esbuild": "^0.8.43",
-    "follow-redirects": "^1.10.0",
-    "fs-extra": "^9.1.0",
-    "fs-extra-promise": "^1.0.1",
-    "lodash": "^4.17.15",
-    "node-stream-zip": "^1.12.0",
-    "recursive-readdir": "^2.2.2",
-    "slugs": "^0.1.3"
+  "devDependencies": {
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^18.17.0",
+    "esbuild": "^0.24.0",
+    "esbuild-plugin-babel-flow": "^0.0.5",
+    "lodash": "^4.17.21",
+    "minimist": "^1.2.8",
+    "node-require-function": "^1.2.0",
+    "patch-package": "^7.0.2",
+    "recursive-readdir": "^2.2.3",
+    "shelljs": "^0.8.5",
+    "slugs": "^0.1.3",
+    "typescript": "^5.5.4"
+  },
+  "scripts": {
+    "setup": "patch-package && npm run build",
+    "prepack": "npm run build && tsc -b",
+    "build": "node ./build/build.mjs",
+    "ts": "tsc -b"
   }
 }

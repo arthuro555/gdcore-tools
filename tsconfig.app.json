@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationDir": "types",
+    "outDir": "types",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "target": "ESNext",
+    "module": "Node16",
+    "lib": ["ESNext", "DOM"],
+    "skipLibCheck": true
+  },
+  "include": ["./gd.d.ts", "./src/**/*"],
+  "exclude": ["./build/tmp/**/*", "./build/loaders.mjs", "./dist/**/*"]
+}

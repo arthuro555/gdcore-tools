@@ -8,15 +8,20 @@
   },
   "properties": {
     "adaptGameResolutionAtRuntime": true,
+    "antialiasingMode": "MSAA",
+    "antialisingEnabledOnMobile": false,
     "folderProject": false,
     "orientation": "landscape",
     "packageName": "com.example.gamename",
+    "pixelsRounding": false,
     "projectUuid": "6fd10fa7-9379-4ed5-9aab-fa7fb1d4fe6f",
     "scaleMode": "linear",
     "sizeOnStartupMode": "adaptWidth",
+    "templateSlug": "",
     "useExternalSourceFiles": false,
     "version": "1.0.0",
     "name": "Project",
+    "description": "",
     "author": "",
     "windowWidth": 800,
     "windowHeight": 600,
@@ -26,68 +31,30 @@
     "verticalSync": false,
     "platformSpecificAssets": {},
     "loadingScreen": {
-      "showGDevelopSplash": true
+      "backgroundColor": 0,
+      "backgroundFadeInDuration": 0.2,
+      "backgroundImageResourceName": "",
+      "gdevelopLogoStyle": "light",
+      "logoAndProgressFadeInDuration": 0.2,
+      "logoAndProgressLogoFadeInDelay": 0.2,
+      "minDuration": 1.5,
+      "progressBarColor": 16777215,
+      "progressBarHeight": 20,
+      "progressBarMaxWidth": 200,
+      "progressBarMinWidth": 40,
+      "progressBarWidthPercent": 30,
+      "showGDevelopSplash": true,
+      "showProgressBar": true
     },
+    "watermark": {
+      "placement": "bottom-left",
+      "showWatermark": true
+    },
+    "authorIds": [],
+    "authorUsernames": [],
+    "categories": [],
+    "playableDevices": [],
     "extensionProperties": [],
-    "extensions": [
-      {
-        "name": "BuiltinObject"
-      },
-      {
-        "name": "BuiltinAudio"
-      },
-      {
-        "name": "BuiltinVariables"
-      },
-      {
-        "name": "BuiltinTime"
-      },
-      {
-        "name": "BuiltinMouse"
-      },
-      {
-        "name": "BuiltinKeyboard"
-      },
-      {
-        "name": "BuiltinJoystick"
-      },
-      {
-        "name": "BuiltinCamera"
-      },
-      {
-        "name": "BuiltinWindow"
-      },
-      {
-        "name": "BuiltinFile"
-      },
-      {
-        "name": "BuiltinNetwork"
-      },
-      {
-        "name": "BuiltinScene"
-      },
-      {
-        "name": "BuiltinAdvanced"
-      },
-      {
-        "name": "Sprite"
-      },
-      {
-        "name": "BuiltinCommonInstructions"
-      },
-      {
-        "name": "BuiltinCommonConversions"
-      },
-      {
-        "name": "BuiltinStringInstructions"
-      },
-      {
-        "name": "BuiltinMathematicalTools"
-      },
-      {
-        "name": "BuiltinExternalLayouts"
-      }
-    ],
     "platforms": [
       {
         "name": "GDevelop JS platform"
@@ -114,6 +81,9 @@
     "resourceFolders": []
   },
   "objects": [],
+  "objectsFolderStructure": {
+    "folderName": "__ROOT"
+  },
   "objectsGroups": [],
   "variables": [],
   "layouts": [
@@ -122,9 +92,6 @@
       "disableInputWhenNotFocused": true,
       "mangledName": "MyScene",
       "name": "MyScene",
-      "oglFOV": 90,
-      "oglZFar": 500,
-      "oglZNear": 1,
       "r": 209,
       "standardSortMethod": true,
       "stopSoundsOnStartup": true,
@@ -151,7 +118,6 @@
           "customSize": false,
           "height": 0,
           "layer": "",
-          "locked": false,
           "name": "MyList",
           "persistentUuid": "2a61bd17-e9c1-477c-8a91-86fb38620f1b",
           "width": 0,
@@ -165,17 +131,19 @@
       ],
       "objects": [
         {
+          "assetStoreId": "",
           "bold": false,
           "italic": false,
           "name": "MyList",
           "smoothed": true,
-          "tags": "",
           "type": "TextObject::Text",
           "underlined": false,
           "variables": [],
+          "effects": [],
           "behaviors": [],
           "string": "My List extracted from a JSON:",
           "font": "",
+          "textAlignment": "",
           "characterSize": 20,
           "color": {
             "b": 0,
@@ -184,11 +152,13 @@
           }
         },
         {
+          "adaptCollisionMaskAutomatically": false,
+          "assetStoreId": "",
           "name": "Button",
-          "tags": "",
           "type": "Sprite",
           "updateIfNotVisible": false,
           "variables": [],
+          "effects": [],
           "behaviors": [],
           "animations": [
             {
@@ -229,9 +199,15 @@
           "ambientLightColorB": 36,
           "ambientLightColorG": 6978960,
           "ambientLightColorR": 32,
+          "camera3DFarPlaneDistance": 10000,
+          "camera3DFieldOfView": 45,
+          "camera3DNearPlaneDistance": 0.1,
+          "cameraType": "perspective",
           "followBaseLayerCamera": false,
           "isLightingLayer": false,
+          "isLocked": false,
           "name": "",
+          "renderingType": "",
           "visibility": true,
           "cameras": [
             {

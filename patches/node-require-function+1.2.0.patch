@@ -1,0 +1,13 @@
+diff --git a/node_modules/node-require-function/index.js b/node_modules/node-require-function/index.js
+index ad33941..9a6e882 100644
+--- a/node_modules/node-require-function/index.js
++++ b/node_modules/node-require-function/index.js
+@@ -31,7 +31,7 @@ function getRequire(args) {
+ 
+ 	// If no Node require function is found then return null.
+ 	// This is the expected result for any non-Node CommonJS loaders.
+-	return null;
++	return require;
+ }
+ 
+ module.exports = getRequire;

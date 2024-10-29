@@ -1,0 +1,65 @@
+name: Publish gdcore-tools for new GDevelop version
+
+on:
+  repository_dispatch:
+    types: [gdevelop-release]
+
+concurrency:
+  cancel-in-progress: true
+  group: release
+
+jobs:
+  generate-release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download Emscripten
+        uses: actions/checkout@v4
+        with:
+          repository: emscripten-core/emsdk
+          path: emsdk
+      - name: Download GDevelop
+        uses: actions/checkout@v4
+        with:
+          repository: 4ian/GDevelop
+          path: GDevelop
+          ref: refs/tags/${{ github.event.client_payload.release.tag_name }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: gdcore-tools
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install other dependencies
+        run: |
+          sudo snap install yq
+          ./emsdk/emsdk install 3.1.21
+          ./emsdk/emsdk activate 3.1.21
+
+      - name: Bump package version
+        run: |
+          npm ci
+          new_version="$(node -e "console.log($(yq '.version' package.json).split('-')[0])")-gd-${{ github.event.client_payload.release.tag_name }}-autobuild"
+          yq ".version = \"$new_version\"" -iP package.json
+        working-directory: gdcore-tools
+
+      - name: Build & publish
+        run: |
+          source ../emsdk/emsdk_env.sh
+          npm publish --provenance --access public --tag prerelease
+          PACKAGE="gdcore-tools@$(jq -r '.version' package.json)"
+          if ! ${{ github.event.client_payload.release.prerelease }}; then
+            echo "Marking as latest"
+            npm dist-tag add $PACKAGE latest
+          fi
+          npm dist-tag add $PACKAGE gd-release-'${{ github.event.client_payload.release.tag_name }}'
+        working-directory: gdcore-tools
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

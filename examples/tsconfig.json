@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "noEmit": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "target": "ESNext",
+    "module": "Node16",
+    "paths": {
+      "gdcore-tools": [".."]
+    }
+  },
+  "include": ["./**/*.(?m)js", "create-objects-from-json/index.mjs", "export-game/index.mjs"],
+  "exclude": ["./build/tmp/**/*", "./dist/**/*"]
+}
