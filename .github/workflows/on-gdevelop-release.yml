@@ -1,6 +1,17 @@
 name: Publish gdcore-tools for new GDevelop version
 
 on:
+  workflow_dispatch:
+    inputs:
+      gdevelop_tag:
+        description: "GDevelop tag to build (for example: v5.6.274)"
+        required: true
+        type: string
+      prerelease:
+        description: "Publish as prerelease only"
+        required: true
+        default: true
+        type: boolean
   repository_dispatch:
     types: [gdevelop-release]
 
@@ -15,6 +26,15 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Resolve release metadata
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "RELEASE_TAG_NAME=${{ inputs.gdevelop_tag }}" >> "$GITHUB_ENV"
+            echo "RELEASE_PRERELEASE=${{ inputs.prerelease }}" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_TAG_NAME=${{ github.event.client_payload.release.tag_name }}" >> "$GITHUB_ENV"
+            echo "RELEASE_PRERELEASE=${{ github.event.client_payload.release.prerelease }}" >> "$GITHUB_ENV"
+          fi
       - name: Download Emscripten
         uses: actions/checkout@v4
         with:
@@ -25,7 +45,7 @@ jobs:
         with:
           repository: 4ian/GDevelop
           path: GDevelop
-          ref: refs/tags/${{ github.event.client_payload.release.tag_name }}
+          ref: refs/tags/${{ env.RELEASE_TAG_NAME }}
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -46,7 +66,7 @@ jobs:
       - name: Bump package version
         run: |
           npm ci
-          new_version="$(node -e "console.log($(yq '.version' package.json).split('-')[0])")-gd-${{ github.event.client_payload.release.tag_name }}-autobuild"
+          new_version="$(node -e "console.log($(yq '.version' package.json).split('-')[0])")-gd-${{ env.RELEASE_TAG_NAME }}-autobuild"
           yq ".version = \"$new_version\"" -iP package.json
         working-directory: gdcore-tools
 
@@ -55,11 +75,11 @@ jobs:
           source ../emsdk/emsdk_env.sh
           npm publish --provenance --access public --tag prerelease
           PACKAGE="gdcore-tools@$(jq -r '.version' package.json)"
-          if ! ${{ github.event.client_payload.release.prerelease }}; then
+          if ! ${{ env.RELEASE_PRERELEASE }}; then
             echo "Marking as latest"
             npm dist-tag add $PACKAGE latest
           fi
-          npm dist-tag add $PACKAGE gd-release-'${{ github.event.client_payload.release.tag_name }}'
+          npm dist-tag add $PACKAGE gd-release-'${{ env.RELEASE_TAG_NAME }}'
         working-directory: gdcore-tools
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
