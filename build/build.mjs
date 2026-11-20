@@ -130,6 +130,19 @@ writeFileSync(
       `import { getUID } from '../../Utils/LocalUserInfo';`,
       `const getUID = () => "gdcore-tools";`
     )
+    .replace(
+      `import Window from '../../Utils/Window';`,
+      `const Window = { getArguments: () => ({}) };`
+    )
+    .replace(
+      `import { decodePercentEncodedFileName } from '../../Utils/PercentEncodedFileName';`,
+      `import { decodePercentEncodedFileName } from '${join(
+        PATHS.NEWIDE,
+        "src",
+        "Utils",
+        "PercentEncodedFileName.js"
+      )}';`
+    )
     .replace(`import optionalRequire from '../../Utils/OptionalRequire';`, ``)
     .replaceAll("optionalRequire", `require`)
 );

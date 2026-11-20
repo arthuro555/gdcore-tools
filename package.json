@@ -37,17 +37,17 @@
   "homepage": "https://github.com/arthuro555/gdcore-tools#readme",
   "devDependencies": {
     "@types/minimist": "^1.2.5",
-    "@types/node": "^18.17.0",
-    "esbuild": "^0.24.0",
+    "@types/node": "^20.3.1",
+    "esbuild": "^0.24.2",
     "esbuild-plugin-babel-flow": "^0.0.5",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "minimist": "^1.2.8",
     "node-require-function": "^1.2.0",
-    "patch-package": "^7.0.2",
+    "patch-package": "^8.0.1",
     "recursive-readdir": "^2.2.3",
     "shelljs": "^0.8.5",
     "slugs": "^0.1.3",
-    "typescript": "^5.5.4"
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "setup": "patch-package && npm run build",

@@ -14,4 +14,4 @@ export const cmd = (cmd, { cwd }) => execSync(cmd, { cwd, stdio: "inherit" });
  * @param {string} cwd
  */
 export const npm_i = (cwd) =>
-  cmd(`npm ${process.env.GITHUB_ACTIONS ? "ci" : "install"}`, { cwd });
+  cmd(`npm install --allow-git=all`, { cwd });
